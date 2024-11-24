@@ -8,11 +8,11 @@
 }
 
 body {
-    background-color: #f0f2f5;
+    background-color: #f0f0f0;
 }
 
 header {
-    background-color: #fff;
+    background-color: #6a8db1;
     padding: 20px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     text-align: center;
@@ -24,14 +24,24 @@ h1 {
 }
 
 .sidebar {
-    background-color: #333;
+    background: linear-gradient(to top, #333, black);
     color: #fff;
     width: 250px;
     position: fixed;
-    top: 70px;
+    top: 76px;
     left: 0;
     height: calc(100% - 70px);
     padding-top: 20px;
+}
+
+.logout{
+    position: fixed;
+    bottom: 70px;
+    width: 150px;
+    padding: auto;
+    color: white;
+    background-color: rgb(209, 76, 76);
+    left: 3%;
 }
 
 ul {
@@ -72,6 +82,14 @@ th, td {
     padding: 12px;
     border: 1px solid #ddd;
     text-align: left;
+}
+
+table tr:nth-child(even) {
+    background-color: #f2f2f2;
+}
+
+table tr:hover {
+    background-color: #a9a9a9;
 }
 
 th {

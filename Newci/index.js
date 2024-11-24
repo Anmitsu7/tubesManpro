@@ -23,7 +23,7 @@ const pool = mysql.createPool({
     multipleStatements: true,
     user: "root",
     password: "",
-    database: "newci",
+    database: "newci2 (2)",
     host: "127.0.0.1",
 });
 
@@ -138,83 +138,6 @@ app.post("/login", (req, res) => {
         });
     });
 });
-
-
-// app.post("/update-status", (req, res) => {
-//     const { id, status } = req.body;
-
-//     pool.query("UPDATE mesincuci SET status = ? WHERE idM = ?", [status, id], (err) => {
-//         if (err) {
-//             console.error("Error updating status:", err.message);
-//             res.status(500).send("Server error");
-//         } else {
-//             res.sendStatus(200);
-//         }
-//     });
-// });
-
-
-
-// app.post("/update-payment-status", (req, res) => {
-//   const { id, statusPembayaran } = req.body;
-//   const tanggalSelesai = new Date().toISOString().slice(0, 19).replace('T', ' ');
-
-//   pool.getConnection((err, connection) => {
-//       if (err) {
-//           console.error("Error connecting to database:", err.message);
-//           res.status(500).send("Server error");
-//           return;
-//       }
-
-//       // Find the latest transaction for the given mesin cuci ID
-//       const findTransactionQuery = `
-//           SELECT idTransaksi FROM transaksi 
-//           WHERE idM = ? 
-//           ORDER BY tglMulai DESC 
-//           LIMIT 1;
-//       `;
-
-//       connection.query(findTransactionQuery, [id], (err, results) => {
-//           if (err) {
-//               connection.release();
-//               console.error("Error finding transaction:", err.message);
-//               res.status(500).send("Server error");
-//               return;
-//           }
-
-//           if (results.length === 0) {
-//               connection.release();
-//               res.status(404).send("Transaction not found");
-//               return;
-//           }
-
-//           const transactionId = results[0].idTransaksi;
-
-//           console.log(`Found transaction with idTransaksi: ${transactionId}`);
-
-//           const updatePaymentStatusQuery = `
-//               UPDATE transaksi 
-//               SET statusPembayaran = ?, tglselesai = ? 
-//               WHERE idTransaksi = ?;
-              
-//               UPDATE mesincuci 
-//               SET status = 'Tersedia' 
-//               WHERE idM = ?;
-//           `;
-
-//           connection.query(updatePaymentStatusQuery, [statusPembayaran, tanggalSelesai, transactionId, id], (err) => {
-//               connection.release();
-
-//               if (err) {
-//                   console.error("Error updating payment status or machine status:", err.message);
-//                   res.status(500).send("Server error");
-//               } else {
-//                   res.sendStatus(200);
-//               }
-//           });
-//       });
-//   });
-// });
 
 app.post("/update-status", (req, res) => {
   const { id, status } = req.body;
@@ -427,15 +350,6 @@ app.post("/tambah-mesin-cuci", (req, res) => {
   });
 }); 
 
-
-// app.get('/kelola-mesin-cuci', (req, res) => {
-//   const query = 'SELECT * FROM mesincuci';
-//   connection.query(query, (err, results) => {
-//       if (err) throw err;
-//       res.render('kelola-mesin-cuci', { mesincuci: results });
-//   });
-// });
-
 app.get("/kelola-pelanggan", (req, res) => {
     const query = `
         SELECT pengguna.namaP, pengguna.noHP, pengguna.alamat 
@@ -484,9 +398,6 @@ app.get("/laporan", (req, res) => {
         }
     });
 });
-
-
-
 
 
 app.get("/tambah-mesin-cuci", (req, res) => {
@@ -572,17 +483,6 @@ app.post("/submit-pemesan", (req, res) => {
 
  
 
-//   app.delete('/hapus-mesin-cuci/:nama', (req, res) => {
-//     const Id = req.params.nama;
-//     pool.query('DELETE FROM mesincuci WHERE nama = ?', [Id], (err, result) => {
-//         if (err) {
-//             console.error('Error deleting data:', err.message);
-//             res.status(500).send('Internal Server Error');
-//         } else {
-//             res.status(200).send('Mesin cuci deleted successfully');
-//         }
-//     });
-// });
 
 app.delete('/hapus-mesin-cuci/:nama', (req, res) => {
   const nama = req.params.nama;

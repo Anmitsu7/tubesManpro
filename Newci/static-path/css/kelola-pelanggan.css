@@ -8,11 +8,11 @@
 }
 
 body {
-    background-color: #f0f2f5;
+    background-color: #f0f0f0;
 }
 
 header {
-    background-color: #fff;
+    background-color: #6a8db1;
     padding: 20px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     text-align: center;
@@ -24,11 +24,11 @@ h1 {
 }
 
 .sidebar {
-    background-color: #333;
+    background: linear-gradient(to top, #333, black);
     color: #fff;
     width: 250px;
     position: fixed;
-    top: 70px;
+    top: 76px;
     left: 0;
     height: calc(100% - 70px);
     padding-top: 20px;
@@ -80,6 +80,14 @@ th {
     font-weight: 500;
 }
 
+table tr:nth-child(even) {
+    background-color: #f2f2f2;
+}
+
+table tr:hover {
+    background-color: #a9a9a9;
+}
+
 .add-btn {
     padding: 10px 20px;
     background-color: #4CAF50;
@@ -108,15 +116,15 @@ th {
 }
 
 .edit-btn button:hover {
-    background-color: #2196F3;
+    background-color: #0008ff;
 }
 
 .delete-btn {
-    background-color: #f44336;
+    background-color: #e53935;
 }
 
 .delete-btn:hover {
-    background-color: #e53935;
+    background-color: #ab0300;
 }
 
 .modal {
