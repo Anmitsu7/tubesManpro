@@ -1,4 +1,4 @@
-document.addEventListener("DOMContentLoaded", function() {
+document.addEventListener("DOMContentLoaded", function () {
     const statusButtons = document.querySelectorAll(".status-btn");
     const infoButtons = document.querySelectorAll(".info-btn");
     const paymentStatusButtons = document.querySelectorAll(".payment-status-btn");
@@ -17,7 +17,7 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 
     statusButtons.forEach(button => {
-        button.addEventListener("click", function() {
+        button.addEventListener("click", function () {
             const id = button.getAttribute("data-id");
             let status = button.getAttribute("data-status");
 
@@ -53,14 +53,14 @@ document.addEventListener("DOMContentLoaded", function() {
     });
 
     infoButtons.forEach(button => {
-        button.addEventListener("click", function() {
+        button.addEventListener("click", function () {
             const idM = button.getAttribute("data-id");
             window.location.href = `/pemesan?idM=${idM}`;
         });
     });
 
     paymentStatusButtons.forEach(button => {
-        button.addEventListener("click", function() {
+        button.addEventListener("click", function () {
             const id = button.getAttribute("data-id");
             let statusPembayaran = button.getAttribute("data-statusP");
 
@@ -100,6 +100,15 @@ document.addEventListener("DOMContentLoaded", function() {
                 row.querySelector(".info-btn").disabled = true;
                 row.querySelector(".payment-status-btn").disabled = true;
             }
+        }
+    });
+    document.querySelector('.logout').addEventListener('click', function(event) {
+        // Konfirmasi logout
+        if (confirm('Apakah Anda yakin ingin logout?')) {
+            // Akan otomatis redirect ke halaman login karena href="/logout"
+            return true;
+        } else {
+            event.preventDefault(); // Batalkan logout jika tidak dikonfirmasi
         }
     });
 });

@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kelola Pelanggan - UKM Newci</title>
     <link rel="stylesheet" href="css/kelola-pelanggan.css">
 </head>
+
 <body>
     <header>
         <h1>Kelola Pelanggan</h1>
@@ -16,6 +18,7 @@
             <li><a href="kelola-mesin-cuci">Kelola Mesin Cuci</a></li>
             <li><a href="kelola-pelanggan">Kelola Pelanggan</a></li>
             <li><a href="laporan">Laporan Pendapatan</a></li>
+            <li><a href="/logout" class="logout">Log Out</a></li>
         </ul>
     </div>
     <main>
@@ -31,17 +34,24 @@
                 </tr>
             </thead>
             <tbody>
-                <% pelanggan.forEach(pelanggan => { %>
+                <% pelanggan.forEach(pelanggan=> { %>
                     <tr>
-                        <td><%= pelanggan.namaP %></td>
-                        <td><%= pelanggan.noHP %></td>
-                        <td><%= pelanggan.alamat %></td>
+                        <td>
+                            <%= pelanggan.namaP %>
+                        </td>
+                        <td>
+                            <%= pelanggan.noHP %>
+                        </td>
+                        <td>
+                            <%= pelanggan.alamat %>
+                        </td>
                         <td>
                             <a class="edit-btn" href="/edit-pelanggan/<%= pelanggan.namaP %>"><button>Edit</button></a>
-                            <button class="delete-btn" onclick="hapusPelanggan('<%= pelanggan.namaP %>')">Delete</button>
+                            <button class="delete-btn"
+                                onclick="hapusPelanggan('<%= pelanggan.namaP %>')">Delete</button>
                         </td>
                     </tr>
-                <% }) %>
+                    <% }) %>
             </tbody>
         </table>
     </main>
@@ -51,23 +61,41 @@
                 fetch(`/hapus-pelanggan/${namaP}`, {
                     method: 'DELETE',
                 })
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Network response was not ok');
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    console.log('Success:', data);
-                    document.getElementById(`pelanggan-${namaP}`).remove();
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('Berhasil menghapus pelanggan');
-                });
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        console.log('Success:', data);
+                        document.getElementById(`pelanggan-${namaP}`).remove();
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('Berhasil menghapus pelanggan');
+                    });
             }
         }
-        
+        document.addEventListener('DOMContentLoaded', function () {
+            const logoutElements = document.querySelectorAll('.logout');
+
+            logoutElements.forEach(function (element) {
+                element.addEventListener('click', function (event) {
+                    event.preventDefault(); // Mencegah navigasi langsung
+
+                    // Tampilkan konfirmasi
+                    const confirmLogout = confirm('Apakah Anda yakin ingin logout?');
+
+                    if (confirmLogout) {
+                        // Jika konfirmasi, arahkan ke halaman logout
+                        window.location.href = '/logout';
+                    }
+                });
+            });
+        });
+
     </script>
 </body>
+
 </html>

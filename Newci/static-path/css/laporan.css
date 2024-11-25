@@ -5,6 +5,30 @@
     margin-bottom: 20px;
 }
 
+.logout {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    width: 200px;
+    padding: 10px 15px;
+    color: white;
+    background-color: #dc3545;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    font-weight: 500;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.logout:hover {
+    background-color: #c82333;
+}
+
 #laporan-container {
     margin-top: 20px;
     max-height: 1000px; /* Atur tinggi maksimum yang diinginkan */
