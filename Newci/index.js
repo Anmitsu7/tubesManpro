@@ -665,3 +665,7 @@ app.delete('/hapus-pelanggan/:namaP', (req, res) => {
       });
     });
   });
+  app.get("/logout", (req, res) => {
+    // Redirect ke halaman login
+    res.redirect("/");
+  });

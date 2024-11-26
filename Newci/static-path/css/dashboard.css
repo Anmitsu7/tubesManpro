@@ -34,15 +34,30 @@ h1 {
     padding-top: 20px;
 }
 
-.logout{
+.logout {
     position: fixed;
-    bottom: 70px;
-    width: 150px;
-    padding: auto;
+    bottom: 20px;
+    left: 20px;
+    width: 200px;
+    padding: 10px 15px;
     color: white;
-    background-color: rgb(209, 76, 76);
-    left: 3%;
+    background-color: #dc3545;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    font-weight: 500;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
 }
+
+.logout:hover {
+    background-color: #c82333;
+}
+
 
 ul {
     list-style-type: none;

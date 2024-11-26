@@ -16,6 +16,7 @@
             <li><a href="kelola-mesin-cuci">Kelola Mesin Cuci</a></li>
             <li><a href="kelola-pelanggan">Kelola Pelanggan</a></li>
             <li><a href="laporan">Laporan Pendapatan</a></li>
+            <li><a href="/logout" class="logout">Log Out</a></li>
         </ul>
     </div>
     <main>
@@ -73,7 +74,23 @@
                 });
             }
         }
+        document.addEventListener('DOMContentLoaded', function() {
+        const logoutElements = document.querySelectorAll('.logout');
         
+        logoutElements.forEach(function(element) {
+            element.addEventListener('click', function(event) {
+                event.preventDefault(); // Mencegah navigasi langsung
+                
+                // Tampilkan konfirmasi
+                const confirmLogout = confirm('Apakah Anda yakin ingin logout?');
+                
+                if (confirmLogout) {
+                    // Jika konfirmasi, arahkan ke halaman logout
+                    window.location.href = '/logout';
+                }
+            });
+        });
+    });
     </script>
 </body>
 </html>
