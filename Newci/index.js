@@ -69,38 +69,39 @@ app.get("/", (req, res) => {
 
 
 app.post("/login", (req, res) => {
-  const { username, password } = req.body;
+    const { username, password } = req.body;
 
-  pool.getConnection((err, connection) => {
-    if (err) {
-      console.error("Error connecting to database:", err.message);
-      res.sendStatus(500);
-      return;
-    }
+    pool.getConnection((err, connection) => {
+        if (err) {
+            console.error("Error connecting to database:", err.message);
+            res.sendStatus(500);
+            return;
+        }
 
-    const query = "SELECT * FROM pengguna WHERE email = ? AND password = ?";
-    connection.query(query, [username, password], (err, results) => {
-      connection.release();
+        const query = "SELECT * FROM pengguna WHERE email = ? AND password = ?";
+        connection.query(query, [username, password], (err, results) => {
+            connection.release();
 
-      if (err) {
-        console.error("Error executing query:", err.message);
-        res.sendStatus(500);
-        return;
-      }
+            if (err) {
+                console.error("Error executing query:", err.message);
+                res.sendStatus(500);
+                return;
+            }
 
-      if (results.length > 0) {
-        res.redirect("/dashboard");
-      } else {
-        res.redirect("/?error=1"); 
-      }
+            if (results.length > 0) {
+                res.redirect("/dashboard");
+            } else {
+                res.redirect("/?error=1");
+            }
+        });
     });
-  });
 });
-  app.get("/login", (req, res) => {
+app.get("/login", (req, res) => {
     res.render("login");
 });
 
-  app.get("/dashboard", (req, res) => {
+app.get("/dashboard", (req, res) => {
+    const struk = req.query.struk;
     pool.getConnection((err, connection) => {
         if (err) {
             console.error("Error connecting to database:", err.message);
@@ -134,221 +135,258 @@ app.post("/login", (req, res) => {
                 return;
             }
 
-            res.render("dashboard", { mesincuci: results });
+            // Render halaman dengan struk
+            res.render('dashboard', {
+                mesincuci: results,
+                struk: struk
+            });
         });
     });
 });
 
+function calculateBill(idM, duration) {
+    return new Promise((resolve, reject) => {
+        pool.getConnection((err, connection) => {
+            if (err) {
+                console.error("Error connecting to database:", err.message);
+                reject("Server error");
+                return;
+            }
+
+            // Find the tariff for the given machine
+            const findTariffQuery = `
+          SELECT tarif FROM mesincuci 
+          WHERE idM = ?;
+        `;
+
+            connection.query(findTariffQuery, [idM], (err, tariffResults) => {
+                if (err) {
+                    connection.release();
+                    console.error("Error finding tariff:", err.message);
+                    reject("Server error");
+                    return;
+                }
+
+                if (tariffResults.length === 0) {
+                    connection.release();
+                    reject("Tariff not found");
+                    return;
+                }
+
+                const tariff = tariffResults[0].tarif;
+                const biaya = duration * tariff;
+
+                connection.release();
+                resolve(biaya);
+            });
+        });
+    });
+}
+
 app.post("/update-status", (req, res) => {
-  const { id, status } = req.body;
+    const { id, status } = req.body;
 
-  // Mengubah waktu selesai menjadi zona waktu WIB
-  const tanggalSelesaiWIB = new Date().toLocaleString('en-GB', {
-      timeZone: 'Asia/Jakarta',
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit'
-  }).replace(/(\d+)\/(\d+)\/(\d+),\s(\d+):(\d+):(\d+)/, '$3-$2-$1 $4:$5:$6');
+    // Mengubah waktu selesai menjadi zona waktu WIB
+    const tanggalSelesaiWIB = new Date().toLocaleString('en-GB', {
+        timeZone: 'Asia/Jakarta',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+    }).replace(/(\d+)\/(\d+)\/(\d+),\s(\d+):(\d+):(\d+)/, '$3-$2-$1 $4:$5:$6');
 
-  pool.getConnection((err, connection) => {
-      if (err) {
-          console.error("Error connecting to database:", err.message);
-          res.status(500).send("Server error");
-          return;
-      }
+    pool.getConnection((err, connection) => {
+        if (err) {
+            console.error("Error connecting to database:", err.message);
+            res.status(500).send("Server error");
+            return;
+        }
 
-      // Find the latest transaction for the given mesin cuci ID
-      const findTransactionQuery = `
-          SELECT idTransaksi, idP, tglmulai FROM transaksi 
-          WHERE idM = ? 
-          ORDER BY tglmulai DESC 
-          LIMIT 1;
-      `;
+        // Find the latest transaction for the given mesin cuci ID
+        const findTransactionQuery = `
+      SELECT idTransaksi, idP, tglmulai FROM transaksi 
+      WHERE idM = ? 
+      ORDER BY tglmulai DESC 
+      LIMIT 1;
+    `;
 
-      connection.query(findTransactionQuery, [id], (err, results) => {
-          if (err) {
-              connection.release();
-              console.error("Error finding transaction:", err.message);
-              res.status(500).send("Server error");
-              return;
-          }
+        connection.query(findTransactionQuery, [id], (err, results) => {
+            if (err) {
+                connection.release();
+                console.error("Error finding transaction:", err.message);
+                res.status(500).send("Server error");
+                return;
+            }
 
-          if (results.length === 0) {
-              connection.release();
-              res.status(404).send("Transaction not found");
-              return;
-          }
+            if (results.length === 0) {
+                connection.release();
+                res.status(404).send("Transaction not found");
+                return;
+            }
 
-          const transactionId = results[0].idTransaksi;
-          const idP = results[0].idP;
-          const tanggalMulai = new Date(results[0].tglmulai);
-          const tanggalSelesaiDate = new Date(tanggalSelesaiWIB);
+            const transactionId = results[0].idTransaksi;
+            const idP = results[0].idP;
+            const pemesan = results[0].pemesan;
+            const tanggalMulai = new Date(results[0].tglmulai);
+            const tanggalSelesaiDate = new Date(tanggalSelesaiWIB);
 
-          // Calculate duration in 15-minute intervals
-          const durationMinutes = Math.ceil((tanggalSelesaiDate - tanggalMulai) / (1000 * 60));
-          const duration = Math.ceil(durationMinutes / 15);
+            // Calculate duration in 15-minute intervals
+            const durationMinutes = Math.ceil((tanggalSelesaiDate - tanggalMulai) / (1000 * 60));
+            const duration = Math.ceil(durationMinutes / 15);
 
-          // Get the tariff for the machine
-          const findTariffQuery = `
-              SELECT tarif FROM mesincuci 
-              WHERE idM = ?;
+            // Calculate the bill
+            calculateBill(id, duration)
+                .then((biaya) => {
+                    const updateQuery = `
+            UPDATE transaksi 
+            SET tglselesai = ?, durasi = ?, biaya = ? 
+            WHERE idTransaksi = ?;
+            
+            UPDATE mesincuci 
+            SET status = ? 
+            WHERE idM = ?;
           `;
 
-          connection.query(findTariffQuery, [id], (err, tariffResults) => {
-              if (err) {
-                  connection.release();
-                  console.error("Error finding tariff:", err.message);
-                  res.status(500).send("Server error");
-                  return;
-              }
+                    const queryParams = [tanggalSelesaiWIB, duration, biaya, transactionId, status, id];
 
-              if (tariffResults.length === 0) {
-                  connection.release();
-                  res.status(404).send("Tariff not found");
-                  return;
-              }
+                    connection.query(updateQuery, queryParams, (err) => {
+                        if (err) {
+                            connection.release();
+                            console.error("Error updating status:", err.message);
+                            res.status(500).send("Server error");
+                            return;
+                        }
 
-              const tariff = tariffResults[0].tarif;
-              const biaya = duration * tariff;
+                        // Get the name of the user
+                        const findUserQuery = `
+  SELECT namaP 
+  FROM pengguna
+  WHERE idP = ?;
+`;
 
-              const updateQuery = `
-                  UPDATE transaksi 
-                  SET tglselesai = ?, durasi = ?, biaya = ? 
-                  WHERE idTransaksi = ?;
-                  
-                  UPDATE mesincuci 
-                  SET status = ? 
-                  WHERE idM = ?;
-              `;
+                        connection.query(findUserQuery, [idP], (err, userResults) => {
+                            if (err) {
+                                connection.release();
+                                console.error("Error finding user:", err.message);
+                                res.status(500).send("Server error");
+                                return;
+                            }
 
-              const queryParams = [tanggalSelesaiWIB, duration, biaya, transactionId, status, id];
+                            if (userResults.length === 0) {
+                                connection.release();
+                                res.status(404).send("User not found");
+                                return;
+                            }
 
-              connection.query(updateQuery, queryParams, (err) => {
-                  if (err) {
-                      connection.release();
-                      console.error("Error updating status:", err.message);
-                      res.status(500).send("Server error");
-                      return;
-                  }
+                            const namaPemesan = userResults[0].namaP;
 
-                  // Get the name of the user
-                  const findUserQuery = `
-                      SELECT namaP FROM pengguna 
-                      WHERE idP = ?;
-                  `;
+                            const struk = `
+    Struk Pembayaran
+    Pemesan: ${namaPemesan}
+    Durasi: ${duration} menit
+    Biaya: Rp ${biaya.toLocaleString()}
+    Tanggal: ${tanggalSelesaiWIB}
+  `;
 
-                  connection.query(findUserQuery, [idP], (err, userResults) => {
-                      connection.release();
-
-                      if (err) {
-                          console.error("Error finding user:", err.message);
-                          res.status(500).send("Server error");
-                          return;
-                      }
-
-                      if (userResults.length === 0) {
-                          res.status(404).send("User not found");
-                          return;
-                      }
-
-                      const pemesan = userResults[0].nama;
-                      res.status(200).json({ pemesan });
-                      console.log(idP);
-                      console.log(idP);
-                  });
-              });
-          });
-      });
-  });
+                            // Redirect to the dashboard with the struk data
+                            res.redirect(`/dashboard?struk=${encodeURIComponent(struk)}`);
+                        });
+                    });
+                })
+                .catch((error) => {
+                    connection.release();
+                    res.status(500).send(error);
+                });
+        });
+    });
 });
 
 app.post("/update-payment-status", (req, res) => {
-  const { id, statusPembayaran } = req.body;
+    const { id, statusPembayaran } = req.body;
 
-  pool.getConnection((err, connection) => {
-      if (err) {
-          console.error("Error connecting to database:", err.message);
-          res.status(500).send("Server error");
-          return;
-      }
+    pool.getConnection((err, connection) => {
+        if (err) {
+            console.error("Error connecting to database:", err.message);
+            res.status(500).send("Server error");
+            return;
+        }
 
-      // Find the latest transaction for the given mesin cuci ID
-      const findTransactionQuery = `
+        // Find the latest transaction for the given mesin cuci ID
+        const findTransactionQuery = `
           SELECT idTransaksi FROM transaksi 
           WHERE idM = ? 
           ORDER BY tglMulai DESC 
           LIMIT 1;
       `;
 
-      connection.query(findTransactionQuery, [id], (err, results) => {
-          if (err) {
-              connection.release();
-              console.error("Error finding transaction:", err.message);
-              res.status(500).send("Server error");
-              return;
-          }
+        connection.query(findTransactionQuery, [id], (err, results) => {
+            if (err) {
+                connection.release();
+                console.error("Error finding transaction:", err.message);
+                res.status(500).send("Server error");
+                return;
+            }
 
-          if (results.length === 0) {
-              connection.release();
-              res.status(404).send("Transaction not found");
-              return;
-          }
+            if (results.length === 0) {
+                connection.release();
+                res.status(404).send("Transaction not found");
+                return;
+            }
 
-          const transactionId = results[0].idTransaksi;
+            const transactionId = results[0].idTransaksi;
 
-          const updatePaymentStatusQuery = `
+            const updatePaymentStatusQuery = `
               UPDATE transaksi 
               SET statusPembayaran = ? 
               WHERE idTransaksi = ?;
           `;
 
-          connection.query(updatePaymentStatusQuery, [statusPembayaran, transactionId], (err) => {
-              connection.release();
+            connection.query(updatePaymentStatusQuery, [statusPembayaran, transactionId], (err) => {
+                connection.release();
 
-              if (err) {
-                  console.error("Error updating payment status:", err.message);
-                  res.status(500).send("Server error");
-              } else {
-                  res.sendStatus(200);
-              }
-          });
-      });
-  });
+                if (err) {
+                    console.error("Error updating payment status:", err.message);
+                    res.status(500).send("Server error");
+                } else {
+                    res.sendStatus(200);
+                }
+            });
+        });
+    });
 });
 
 
 
 
 app.get("/kelola-mesin-cuci", (req, res) => {
-  pool.query("SELECT * FROM mesincuci where status = 'Tersedia'", (err, results) => {
-      if (err) {
-          console.error("Error fetching data:", err.message);
-          res.status(500).send("Server error");
-      } else {
-          res.render("kelola-mesin-cuci", { mesincuci: results });
-      }
-  });
+    pool.query("SELECT * FROM mesincuci where status = 'Tersedia'", (err, results) => {
+        if (err) {
+            console.error("Error fetching data:", err.message);
+            res.status(500).send("Server error");
+        } else {
+            res.render("kelola-mesin-cuci", { mesincuci: results });
+        }
+    });
 });
 
 app.post("/tambah-mesin-cuci", (req, res) => {
-  const { nama, merek, kapasitas, tarif } = req.body;
-  const status = 'Tersedia'; // Anda dapat mengatur status default di sini
+    const { nama, merek, kapasitas, tarif } = req.body;
+    const status = 'Tersedia'; // Anda dapat mengatur status default di sini
 
-  const sql = "INSERT INTO mesincuci (nama, merek, kapasitas, tarif, status) VALUES (?, ?, ?, ?, ?)";
-  const values = [nama, merek, kapasitas, tarif, status];
+    const sql = "INSERT INTO mesincuci (nama, merek, kapasitas, tarif, status) VALUES (?, ?, ?, ?, ?)";
+    const values = [nama, merek, kapasitas, tarif, status];
 
-  pool.query(sql, values, (err, results) => {
-      if (err) {
-          console.error("Error inserting data:", err.message);
-          res.status(500).send("Server error");
-      } else {
-          res.redirect("/kelola-mesin-cuci"); // Redirect ke halaman kelola mesin cuci setelah berhasil menambah
-      }
-  });
-}); 
+    pool.query(sql, values, (err, results) => {
+        if (err) {
+            console.error("Error inserting data:", err.message);
+            res.status(500).send("Server error");
+        } else {
+            res.redirect("/kelola-mesin-cuci"); // Redirect ke halaman kelola mesin cuci setelah berhasil menambah
+        }
+    });
+});
 
 app.get("/kelola-pelanggan", (req, res) => {
     const query = `
@@ -410,151 +448,177 @@ app.get("/edit-mesin-cuci", (req, res) => {
 });
 
 app.get("/tambah-pelanggan", (req, res) => {
-  pool.query("SELECT idKel, namaKel FROM kelurahan", (err, results) => {
-      if (err) {
-          console.error("Error fetching data:", err.message);
-          res.status(500).send("Internal Server Error");
-      } else {
-          res.render("tambah-pelanggan", { kelurahan: results, errorMsg: null, successMsg: null });
-      }
-  });
+    pool.query("SELECT idKel, namaKel FROM kelurahan", (err, results) => {
+        if (err) {
+            console.error("Error fetching data:", err.message);
+            res.status(500).send("Internal Server Error");
+        } else {
+            res.render("tambah-pelanggan", { kelurahan: results, errorMsg: null, successMsg: null });
+        }
+    });
 });
 
-  app.get("/pemesan", (req, res) => {
+app.get("/pemesan", (req, res) => {
     const idM = req.query.idM;
     res.render("pemesan", { idM });
     console.log(idM);
 });
 
+//untuk mengeluarkan dropdown nama dan mengisi sesuai no hp pada halaman informasi pemesan
+app.get('/get-names', (req, res) => {
+    pool.query('SELECT namaP FROM pengguna', (err, results) => {
+        if (err) {
+            console.error('Error fetching names:', err);
+            res.status(500).send('Internal Server Error');
+        } else {
+            res.json(results);
+        }
+    });
+});
+
+app.get('/get-phone-by-name', (req, res) => {
+    const name = req.query.name;
+    pool.query('SELECT noHP FROM pengguna WHERE namaP = ?', [name], (err, results) => {
+        if (err) {
+            console.error('Error fetching phone number:', err);
+            res.status(500).send('Internal Server Error');
+        } else if (results.length > 0) {
+            res.json({ nohp: results[0].noHP });
+        } else {
+            res.status(404).send('Phone number not found');
+        }
+    });
+});
+
 app.post("/submit-pemesan", (req, res) => {
-  const { idM, nama, nohp} = req.body;
-  const tanggalMulai = new Date().toLocaleString('en-GB', {
-      timeZone: 'Asia/Jakarta', // Sesuaikan dengan zona waktu lokal Anda
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit'
-  }).replace(/(\d+)\/(\d+)\/(\d+),\s(\d+):(\d+):(\d+)/, '$3-$2-$1 $4:$5:$6');
+    const { idM, nama, nohp } = req.body;
+    const tanggalMulai = new Date().toLocaleString('en-GB', {
+        timeZone: 'Asia/Jakarta', // Sesuaikan dengan zona waktu lokal Anda
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+    }).replace(/(\d+)\/(\d+)\/(\d+),\s(\d+):(\d+):(\d+)/, '$3-$2-$1 $4:$5:$6');
 
-  pool.getConnection((err, connection) => {
-      if (err) {
-          console.error("Error connecting to database:", err.message);
-          res.status(500).send("Server error");
-          return;
-      }
+    pool.getConnection((err, connection) => {
+        if (err) {
+            console.error("Error connecting to database:", err.message);
+            res.status(500).send("Server error");
+            return;
+        }
 
-      // Check if customer exists
-      const checkCustomerQuery = "SELECT * FROM pengguna WHERE namaP = ? AND nohp = ?";
-      connection.query(checkCustomerQuery, [nama, nohp], (err, results) => {
-          if (err) {
-              connection.release();
-              console.error("Error checking customer:", err.message);
-              res.status(500).send("Server error");
-              return;
-          }
+        // Check if customer exists
+        const checkCustomerQuery = "SELECT * FROM pengguna WHERE namaP = ? AND nohp = ?";
+        connection.query(checkCustomerQuery, [nama, nohp], (err, results) => {
+            if (err) {
+                connection.release();
+                console.error("Error checking customer:", err.message);
+                res.status(500).send("Server error");
+                return;
+            }
 
-          if (results.length === 0) {
-              connection.release();
-              res.status(400).send("Customer not found!");
-              return;
-          }
+            if (results.length === 0) {
+                connection.release();
+                res.status(400).send("Customer not found!");
+                return;
+            }
 
-          const pelangganId = results[0].idP;
+            const pelangganId = results[0].idP;
 
-          // Insert into transaksi table and update mesin cuci status
-          const insertTransaksiQuery = "INSERT INTO transaksi (idM, idP, tglMulai) VALUES (?, ?, ?)";
-          const updateStatusQuery = "UPDATE mesincuci SET status = 'Digunakan' WHERE idM = ?";
-          connection.query(insertTransaksiQuery + ';' + updateStatusQuery, [idM, pelangganId, tanggalMulai, idM], (err) => {
-              connection.release();
+            // Insert into transaksi table and update mesin cuci status
+            const insertTransaksiQuery = "INSERT INTO transaksi (idM, idP, tglMulai) VALUES (?, ?, ?)";
+            const updateStatusQuery = "UPDATE mesincuci SET status = 'Digunakan' WHERE idM = ?";
+            connection.query(insertTransaksiQuery + ';' + updateStatusQuery, [idM, pelangganId, tanggalMulai, idM], (err) => {
+                connection.release();
 
-              if (err) {
-                  console.error("Error inserting transaksi or updating status:", err.message);
-                  res.status(500).send("Server error");
-              } else {
-                  res.redirect("/dashboard");
-              }
-          });
-      });
-  });
+                if (err) {
+                    console.error("Error inserting transaksi or updating status:", err.message);
+                    res.status(500).send("Server error");
+                } else {
+                    res.redirect("/dashboard");
+                }
+            });
+        });
+    });
 });
 
 
- 
+
 
 
 app.delete('/hapus-mesin-cuci/:nama', (req, res) => {
-  const nama = req.params.nama;
+    const nama = req.params.nama;
 
-  pool.query('SELECT idm FROM mesincuci WHERE nama = ?', [nama], (err, results) => {
-    if (err) {
-      console.error('Error finding data:', err.message);
-      res.status(500).send('Internal Server Error');
-      return;
-    }
-
-    if (results.length === 0) {
-      res.status(404).send('Mesin cuci not found');
-      return;
-    }
-
-    const idm = results[0].idm;
-
-    pool.query('DELETE FROM transaksi WHERE idM = ?', [idm], (err, result) => {
-      if (err) {
-        console.error('Error deleting related data:', err.message);
-        res.status(500).send('Internal Server Error');
-        return;
-      }
-
-      pool.query('DELETE FROM mesincuci WHERE idm = ?', [idm], (err, result) => {
+    pool.query('SELECT idm FROM mesincuci WHERE nama = ?', [nama], (err, results) => {
         if (err) {
-          console.error('Error deleting data:', err.message);
-          res.status(500).send('Internal Server Error');
-        } else {
-          res.status(200).send('Mesin cuci deleted successfully');
+            console.error('Error finding data:', err.message);
+            res.status(500).send('Internal Server Error');
+            return;
         }
-      });
+
+        if (results.length === 0) {
+            res.status(404).send('Mesin cuci not found');
+            return;
+        }
+
+        const idm = results[0].idm;
+
+        pool.query('DELETE FROM transaksi WHERE idM = ?', [idm], (err, result) => {
+            if (err) {
+                console.error('Error deleting related data:', err.message);
+                res.status(500).send('Internal Server Error');
+                return;
+            }
+
+            pool.query('DELETE FROM mesincuci WHERE idm = ?', [idm], (err, result) => {
+                if (err) {
+                    console.error('Error deleting data:', err.message);
+                    res.status(500).send('Internal Server Error');
+                } else {
+                    res.status(200).send('Mesin cuci deleted successfully');
+                }
+            });
+        });
     });
-  });
 });
 
 
 
 
 app.get('/edit-mesin-cuci/:nama', (req, res) => {
-  const Id = req.params.nama;
-  pool.query('SELECT * FROM mesincuci WHERE nama = ?', [Id], (err, results) => {
-      if (err) {
-          console.error('Error fetching data:', err.message);
-          res.status(500).send('Internal Server Error');
-          return;
-      }
-      if (results.length > 0) {
-          res.render('edit-mesin-cuci', { mesin: results[0] });
-      } else {
-          res.status(404).send('Mesin cuci not found');
-      }
-  });
+    const Id = req.params.nama;
+    pool.query('SELECT * FROM mesincuci WHERE nama = ?', [Id], (err, results) => {
+        if (err) {
+            console.error('Error fetching data:', err.message);
+            res.status(500).send('Internal Server Error');
+            return;
+        }
+        if (results.length > 0) {
+            res.render('edit-mesin-cuci', { mesin: results[0] });
+        } else {
+            res.status(404).send('Mesin cuci not found');
+        }
+    });
 });
 
 
 app.post('/edit-mesin-cuci/:nama', (req, res) => {
-  const nama2 = req.params.nama;
-  const { nama, merek, kapasitas, tarif } = req.body;
-  pool.query(
-      'UPDATE mesincuci SET nama = ?, merek = ?, kapasitas = ?, tarif = ?, status = "Tersedia" WHERE nama = ?',
-      [nama, merek, kapasitas,tarif, nama2 ],
-      (err, result) => {
-          if (err) {
-              console.error('Error updating data:', err.message);
-              res.status(500).send('Internal Server Error');
-              return;
-          }
-          res.redirect('/kelola-mesin-cuci');
-      }
-  );
+    const nama2 = req.params.nama;
+    const { nama, merek, kapasitas, tarif } = req.body;
+    pool.query(
+        'UPDATE mesincuci SET nama = ?, merek = ?, kapasitas = ?, tarif = ?, status = "Tersedia" WHERE nama = ?',
+        [nama, merek, kapasitas, tarif, nama2],
+        (err, result) => {
+            if (err) {
+                console.error('Error updating data:', err.message);
+                res.status(500).send('Internal Server Error');
+                return;
+            }
+            res.redirect('/kelola-mesin-cuci');
+        }
+    );
 });
 
 app.post("/tambah-pelanggan", (req, res) => {
@@ -631,41 +695,41 @@ app.post('/edit-pelanggan/:namaP', (req, res) => {
 
 app.delete('/hapus-pelanggan/:namaP', (req, res) => {
     const namaP = req.params.namaP;
-  
+
     pool.query('SELECT idP FROM pengguna WHERE namaP = ?', [namaP], (err, results) => {
-      if (err) {
-        console.error('Error finding data:', err.message);
-        res.status(500).send('Internal Server Error');
-        return;
-      }
-  
-      if (results.length === 0) {
-        res.status(404).send('Pelanggan not found');
-        return;
-      }
-  
-      const idP = results[0].idP;
-  
-      pool.query('DELETE FROM transaksi WHERE idP = ?', [idP], (err, result) => {
         if (err) {
-          console.error('Error deleting related data:', err.message);
-          res.status(500).send('Internal Server Error');
-          return;
-        }
-  
-        pool.query('DELETE FROM pengguna WHERE idP = ?', [idP], (err, result) => {
-          if (err) {
-            console.error('Error deleting data:', err.message);
+            console.error('Error finding data:', err.message);
             res.status(500).send('Internal Server Error');
-          } else {
-            res.status(200).send('Pelanggan deleted successfully');
-            
-          }
+            return;
+        }
+
+        if (results.length === 0) {
+            res.status(404).send('Pelanggan not found');
+            return;
+        }
+
+        const idP = results[0].idP;
+
+        pool.query('DELETE FROM transaksi WHERE idP = ?', [idP], (err, result) => {
+            if (err) {
+                console.error('Error deleting related data:', err.message);
+                res.status(500).send('Internal Server Error');
+                return;
+            }
+
+            pool.query('DELETE FROM pengguna WHERE idP = ?', [idP], (err, result) => {
+                if (err) {
+                    console.error('Error deleting data:', err.message);
+                    res.status(500).send('Internal Server Error');
+                } else {
+                    res.status(200).send('Pelanggan deleted successfully');
+
+                }
+            });
         });
-      });
     });
-  });
-  app.get("/logout", (req, res) => {
+});
+app.get("/logout", (req, res) => {
     // Redirect ke halaman login
     res.redirect("/");
-  });
+});

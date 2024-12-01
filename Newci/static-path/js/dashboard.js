@@ -2,6 +2,47 @@ document.addEventListener("DOMContentLoaded", function () {
     const statusButtons = document.querySelectorAll(".status-btn");
     const infoButtons = document.querySelectorAll(".info-btn");
     const paymentStatusButtons = document.querySelectorAll(".payment-status-btn");
+    // Struk functionality
+    const strukContainer = document.querySelector('.struk-container');
+    const closeStrukBtn = document.querySelector('.close-struk');
+
+    if (strukContainer && closeStrukBtn) {
+        closeStrukBtn.addEventListener('click', () => {
+            // Remove struk from URL to prevent re-showing on refresh
+            if (window.history.replaceState) {
+                window.history.replaceState(null, null, window.location.pathname);
+            }
+            strukContainer.style.display = 'none';
+        });
+    }
+    
+    statusButtons.forEach(button => {
+        button.addEventListener('click', async (e) => {
+            const id = e.target.dataset.id;
+            const currentStatus = e.target.dataset.status;
+            const newStatus = currentStatus === 'Tersedia' ? 'Tidak Tersedia' : 'Tersedia';
+
+            try {
+                const response = await fetch('/update-status', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ 
+                        id: id, 
+                        status: newStatus 
+                    })
+                });
+
+                // Jika server menggunakan redirect, maka halaman akan otomatis reload
+                if (response.redirected) {
+                    window.location.href = response.url;
+                }
+            } catch (error) {
+                console.error('Error updating status:', error);
+            }
+        });
+    });
 
     function updateTotalHargaCell(button) {
         const row = button.closest("tr");
@@ -111,4 +152,7 @@ document.addEventListener("DOMContentLoaded", function () {
             event.preventDefault(); // Batalkan logout jika tidak dikonfirmasi
         }
     });
+
+    
+    
 });

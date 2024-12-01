@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard Admin - UKM Newci</title>
     <link rel="stylesheet" href="css/dashboard.css">
 </head>
+
 <body>
     <header>
         <h1>Dashboard Admin</h1>
@@ -35,32 +37,52 @@
             <tbody>
                 <% mesincuci.forEach(function(mesin) { %>
                     <tr>
-                        <td><%= mesin.nama %></td>
-                        <td><%= mesin.merek %></td>
                         <td>
-                            <button class="status-btn" data-id="<%= mesin.idM %>" data-status="<%= mesin.status %>" style="background-color: <%= mesin.status === 'Tersedia' ? '#4CAF50' : '#f44336' %>;">
+                            <%= mesin.nama %>
+                        </td>
+                        <td>
+                            <%= mesin.merek %>
+                        </td>
+                        <td>
+                            <button class="status-btn" data-id="<%= mesin.idM %>" data-status="<%= mesin.status %>"
+                                style="background-color: <%= mesin.status === 'Tersedia' ? '#4CAF50' : '#f44336' %>;">
                                 <%= mesin.status %>
                             </button>
                         </td>
                         <td>
-                            <div class = "pp"><%= mesin.pemesan %></div>
-                            <button class="info-btn" data-id="<%= mesin.idM %>" 
-                                <%= (mesin.status === 'Tersedia' && mesin.statusPembayaran === 'Belum Lunas') ? 'disabled' : '' %>>Informasi Pemesan</button>
+                            <div class="pp">
+                                <%= mesin.pemesan %>
+                            </div>
+                            <button class="info-btn" data-id="<%= mesin.idM %>" <%=(mesin.status==='Tersedia' &&
+                                mesin.statusPembayaran==='Belum Lunas' ) ? 'disabled' : '' %>>Informasi Pemesan</button>
                         </td>
                         <td>
-                            <button class="payment-status-btn" data-id="<%= mesin.idM %>" data-statusP="<%= mesin.statusPembayaran %>" style="background-color: <%= mesin.statusPembayaran === 'Lunas' ? '#4CAF50' : '#f44336' %>;">
+                            <button class="payment-status-btn" data-id="<%= mesin.idM %>"
+                                data-statusP="<%= mesin.statusPembayaran %>"
+                                style="background-color: <%= mesin.statusPembayaran === 'Lunas' ? '#4CAF50' : '#f44336' %>;">
                                 <%= mesin.statusPembayaran %>
                             </button>
                         </td>
-                        <td class="total-harga-cell" <%= mesin.status === 'Tersedia' && mesin.statusPembayaran === 'Belum Lunas' ? '' : 'style="display:none;"' %> >
-                         <%= mesin.biaya %> (<%= mesin.durasi * 15%> menit)
+                        <td class="total-harga-cell" <%=mesin.status==='Tersedia' &&
+                            mesin.statusPembayaran==='Belum Lunas' ? '' : 'style="display:none;"' %> >
+                            <%= mesin.biaya %> (<%= mesin.durasi * 15%> menit)
                         </td>
                     </tr>
-                <% }); %>
+                    <% }); %>
             </tbody>
         </table>
-        
+
     </main>
-    <script src="js/dashboard.js"></script>
+    <% if (locals.struk) { %>
+        <div class="struk-container">
+            <div class="struk">
+                <h2>Struk Pembayaran</h2>
+                <pre class="struk-content"><%= struk %></pre>
+                <button class="close-struk">Tutup</button>
+            </div>
+        </div>
+        <% } %>
+            <script src="js/dashboard.js"></script>
 </body>
+
 </html>
