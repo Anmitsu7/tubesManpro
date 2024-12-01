@@ -15,7 +15,6 @@
             <li><a href="dashboard">Dashboard</a></li>
             <li><a href="kelola-mesin-cuci">Kelola Mesin Cuci</a></li>
             <li><a href="kelola-pelanggan">Kelola Pelanggan</a></li>
-        
             <li><a href="laporan">Laporan Pendapatan</a></li>
         </ul>
     </div>
@@ -24,15 +23,49 @@
         <form id="tambah-pelanggan-form" method="post" action="/submit-pemesan">
             <input type="hidden" id="idM" name="idM" value="<%= idM %>">
             <label for="nama">Nama:</label>
-            <input type="text" id="nama" name="nama" required>
+            <select id="nama" name="nama" required>
+                <option value="">Pilih Nama</option>
+            </select>
             <label for="nohp">No HP:</label>
             <input type="text" id="nohp" name="nohp" required>
-           
             <button type="submit">Submit</button>
         </form>
-        
     </main>
     <script>
+        window.onload = function() {
+            fetchNames();
+        };
+
+        const nameDropdown = document.getElementById('nama');
+        nameDropdown.addEventListener('change', onNameSelected);
+
+        function fetchNames() {
+            fetch('/get-names')
+                .then(response => response.json())
+                .then(data => {
+                    data.forEach(item => {
+                        const option = document.createElement('option');
+                        option.value = item.namaP;
+                        option.text = item.namaP;
+                        nameDropdown.add(option);
+                    });
+                })
+                .catch(error => {
+                    console.error('Error fetching names:', error);
+                });
+        }
+
+        function onNameSelected() {
+            const selectedName = nameDropdown.value;
+            fetch(`/get-phone-by-name?name=${selectedName}`)
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('nohp').value = data.nohp;
+                })
+                .catch(error => {
+                    console.error('Error fetching phone number:', error);
+                });
+        }
     </script>
 </body>
 </html>
