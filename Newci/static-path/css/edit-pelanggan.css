@@ -92,7 +92,8 @@ h2 {
     transition: all 0.3s ease;
     display: flex;
     align-items: center;
-    justify-content: center;
+    justify-content: center; /* Centered horizontally */
+    text-align: center; /* Centered text */
     gap: 10px;
     font-weight: 500;
     box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
