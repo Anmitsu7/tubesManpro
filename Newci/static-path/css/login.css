@@ -1,3 +1,15 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap');
+
+:root {
+    --primary-color: #3a6ea5;
+    --secondary-color: #5c9ead;
+    --background-light: #f4f7f6;
+    --text-dark: #2c3e50;
+    --white: #ffffff;
+    --accent-color: #2ecc71;
+    --warning-color: #e74c3c;
+}
+
 * {
     box-sizing: border-box;
     margin: 0;
@@ -10,22 +22,25 @@ body {
     justify-content: center;
     align-items: center;
     height: 100vh;
-    background: linear-gradient(to right, #99CCff, #C0C0C0);
+    background-color: var(--background-light);
+    color: var(--text-dark);
 }
 
 .login-container {
-    width: 350px;
-    padding: 20px 40px;
-    background-color: #fff;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    width: 400px;
+    padding: 30px 40px;
+    background-color: var(--white);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
     border-radius: 12px;
     text-align: center;
+    border-top: 5px solid var(--primary-color);
 }
 
 h2 {
-    margin-bottom: 20px;
-    color: #333;
+    margin-bottom: 25px;
+    color: var(--primary-color);
     font-weight: 600;
+    font-size: 24px;
 }
 
 .input-group {
@@ -35,57 +50,60 @@ h2 {
 
 label {
     display: block;
-    margin-bottom: 8px;
+    margin-bottom: 10px;
     font-weight: 500;
-    color: #555;
+    color: var(--text-dark);
 }
 
 input[type="text"],
 input[type="password"] {
     width: 100%;
     padding: 12px;
-    border: 1px solid #ddd;
-    border-radius: 6px;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
     transition: all 0.3s ease;
+    color: var(--text-dark);
 }
 
 input[type="text"]:focus,
 input[type="password"]:focus {
-    border-color: #45a049;
-    box-shadow: 0 0 8px rgba(255, 94, 98, 0.2);
+    border-color: var(--primary-color);
+    box-shadow: 0 0 10px rgba(58, 110, 165, 0.2);
     outline: none;
 }
 
 .btn {
     width: 100%;
     padding: 12px;
-    background-color: #45a049;
+    background-color: var(--primary-color);
     border: none;
-    border-radius: 6px;
-    color: #fff;
+    border-radius: 8px;
+    color: var(--white);
     font-size: 16px;
     font-weight: 600;
     cursor: pointer;
-    transition: background-color 0.3s ease;
+    transition: all 0.3s ease;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
 }
 
 .btn:hover {
-    background-color: #e14b50;
+    background-color: var(--secondary-color);
+    transform: translateY(-3px);
 }
 
 p {
-    margin-top: 15px;
-    color: #555;
+    margin-top: 20px;
+    color: var(--text-dark);
 }
 
 a {
-    color: #ff5e62;
+    color: var(--primary-color);
     text-decoration: none;
     font-weight: 500;
     transition: color 0.3s ease;
 }
 
 a:hover {
-    color: #e14b50;
+    color: var(--secondary-color);
     text-decoration: underline;
 }

@@ -1,25 +1,46 @@
-/* CSS for edit-pelanggan.css */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap');
 
-body {
-    font-family: Arial, sans-serif;
+:root {
+    --primary-color: #3a6ea5;
+    --secondary-color: #5c9ead;
+    --background-light: #f4f7f6;
+    --text-dark: #2c3e50;
+    --white: #ffffff;
+    --accent-color: #2ecc71;
+    --warning-color: #e74c3c;
+}
+
+* {
+    box-sizing: border-box;
     margin: 0;
     padding: 0;
-    background-color: #f0f0f0;
+    font-family: 'Poppins', sans-serif;
+}
+
+body {
+    background-color: var(--background-light);
+    color: var(--text-dark);
+    line-height: 1.6;
 }
 
 header {
-    background-color: #333;
-    color: white;
-    padding: 10px 0;
+    background-color: var(--primary-color);
+    color: var(--white);
+    padding: 20px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     text-align: center;
 }
 
 .sidebar {
-    width: 200px;
-    background-color: #333;
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    color: var(--white);
+    width: 250px;
     position: fixed;
-    height: 100%;
+    top: 76px;
+    left: 0;
+    height: calc(100% - 70px);
     padding-top: 20px;
+    box-shadow: 4px 0 15px rgba(0, 0, 0, 0.1);
 }
 
 .sidebar ul {
@@ -27,66 +48,102 @@ header {
     padding: 0;
 }
 
-.sidebar ul li {
-    text-align: left;
-    padding: 10px;
+.sidebar li {
+    margin: 10px 0;
+    transition: background-color 0.3s ease;
 }
 
-.sidebar ul li a {
-    color: white;
+.sidebar li a {
+    color: var(--white);
     text-decoration: none;
+    padding: 12px 20px;
     display: block;
+    border-radius: 8px;
+    transition: background-color 0.3s ease;
 }
 
-.sidebar ul li a:hover {
-    background-color: #575757;
+.sidebar li a:hover {
+    background-color: rgba(255, 255, 255, 0.2);
 }
 
 main {
-    margin-left: 220px;
+    margin-left: 250px;
     padding: 20px;
-    background-color: white;
 }
 
-main h2 {
-    margin-top: 0;
+h2 {
+    color: var(--primary-color);
+    margin-bottom: 25px;
+    border-bottom: 3px solid var(--secondary-color);
+    padding-bottom: 10px;
+}
+
+.logout {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    width: 220px;
+    padding: 12px 15px;
+    color: var(--white);
+    background-color: var(--warning-color);
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    font-weight: 500;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+.logout:hover {
+    background-color: #c0392b;
+    transform: translateY(-3px);
 }
 
 form {
-    background-color: #f9f9f9;
-    padding: 20px;
-    border-radius: 5px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    background-color: var(--white);
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 }
 
 form label {
     display: block;
-    margin-bottom: 5px;
-    font-weight: bold;
+    margin: 15px 0 8px;
+    color: var(--text-dark);
+    font-weight: 500;
 }
 
 form input[type="text"] {
     width: 100%;
     padding: 10px;
-    margin-bottom: 10px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
+    border: 1px solid #d1d8e0;
+    border-radius: 6px;
+    transition: border-color 0.3s ease;
+}
+
+form input[type="text"]:focus {
+    outline: none;
+    border-color: var(--primary-color);
 }
 
 form button {
-    background-color: #4CAF50;
-    color: white;
+    width: 100%;
+    padding: 12px;
+    background-color: var(--primary-color);
+    color: var(--white);
     border: none;
-    padding: 10px 20px;
-    text-align: center;
-    text-decoration: none;
-    display: inline-block;
-    font-size: 16px;
-    margin-top: 10px;
+    border-radius: 8px;
     cursor: pointer;
-    border-radius: 5px;
+    transition: all 0.3s ease;
+    margin-top: 15px;
+    font-weight: 500;
 }
 
 form button:hover {
-    background-color: #45a049;
+    background-color: #2c3e50;
+    transform: translateY(-2px);
 }
